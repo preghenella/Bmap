@@ -9,6 +9,9 @@
 #include "G4VTouchable.hh"
 #include "G4VPhysicalVolume.hh"
 
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithAString.hh"
+
 #include "TROOT.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -19,8 +22,24 @@ RootIO *RootIO::mInstance = nullptr;
 
 /*****************************************************************/
 
-RootIO::RootIO()
+void
+RootIO::InitMessenger()
 {
+  mDirectory = new G4UIdirectory("/io/");
+
+  mFileNameCmd = new G4UIcmdWithAString("/io/prefix", this);
+  mFileNameCmd->SetGuidance("Output file prefix.");
+  mFileNameCmd->SetParameterName("prefix", false);
+  mFileNameCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+}
+
+/*****************************************************************/
+  
+void
+RootIO::SetNewValue(G4UIcommand *command, G4String value)
+{
+  if (command == mFileNameCmd)
+    mFilePrefix = value;
 }
 
 /*****************************************************************/
@@ -29,7 +48,7 @@ void
 RootIO::BeginOfRunAction(const G4Run *aRun)
 {
   if (mInteractive) return;
-  std::string filename = Form("%s.%03d.root", "Bmap", aRun->GetRunID());
+  std::string filename = Form("%s.%03d.root", mFilePrefix.c_str(), aRun->GetRunID());
   Open(filename);
 }
 

@@ -35,6 +35,9 @@ main(int argc, char **argv)
   run->SetUserAction(action_run);
   run->SetUserAction(action_event);
   
+  // initialize RootIO messenger
+  RootIO::Instance()->InitMessenger();
+
   G4VisManager* visManager = new G4VisExecutive;
   // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
   // G4VisManager* visManager = new G4VisExecutive("Quiet");

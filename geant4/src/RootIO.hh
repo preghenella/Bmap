@@ -1,5 +1,10 @@
+/// @author: Roberto Preghenella
+/// @email: preghenella@bo.infn.it
+
 #ifndef _RootIO_h_
 #define _RootIO_h_
+
+#include "G4UImessenger.hh"
 
 #include <string>
 
@@ -11,7 +16,11 @@ class G4Step;
 class G4StepPoint;
 class G4Track;
 
-class RootIO
+class G4UIcommand;
+class G4UIdirectory;
+class G4UIcmdWithAString;
+
+class RootIO : public G4UImessenger
 {
   
 public:
@@ -20,6 +29,9 @@ public:
     if (!mInstance) mInstance = new RootIO();
     return mInstance;
   };
+
+  void InitMessenger();
+  void SetNewValue(G4UIcommand *command, G4String value);
 
   void BeginOfRunAction(const G4Run *aRun);
   void EndOfRunAction(const G4Run *aRun);
@@ -41,11 +53,15 @@ public:
 
 private:
   
-  RootIO();
+  RootIO() = default;
 
   static RootIO *mInstance;
+  std::string mFilePrefix = "Bmap";
   bool mInteractive = false;
   TFile *mFile = nullptr;
+
+  G4UIdirectory *mDirectory;
+  G4UIcmdWithAString *mFileNameCmd;
   
   TTree *mTreeHits = nullptr;
   static const int kMaxHits = 1024;

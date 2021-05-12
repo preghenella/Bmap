@@ -119,7 +119,14 @@ DetectorConstruction::ConstructSDandField()
   auto fieldManager = new G4FieldManager();
   fieldManager->SetDetectorField(magneticField);
   fieldManager->CreateChordFinder(magneticField);
-  mMagneticLogical->SetFieldManager(fieldManager, true);
+
+  auto magneticFieldZero = new MagneticFieldZero();
+  auto fieldManagerZero = new G4FieldManager();
+  fieldManagerZero->SetDetectorField(magneticFieldZero);
+  fieldManagerZero->CreateChordFinder(magneticFieldZero);
+
+  mMagneticLogical->SetFieldManager(fieldManagerZero, false);
+  mRadiatorLogical->SetFieldManager(fieldManager, false);
 }
 
 /*****************************************************************/
