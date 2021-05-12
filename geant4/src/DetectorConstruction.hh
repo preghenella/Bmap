@@ -9,6 +9,7 @@
 
 class G4String;
 class G4LogicalVolume;
+class G4Material;
 
 class G4UIdirectory;
 class G4UIcmdWithAString;

@@ -64,7 +64,7 @@ private:
   G4UIcmdWithAString *mFileNameCmd;
   
   TTree *mTreeHits = nullptr;
-  static const int kMaxHits = 1024;
+  static const int kMaxHits = 1048576;
   struct Hits_t {
     int    n;
     int    trkid[kMaxHits];
@@ -79,7 +79,7 @@ private:
   } mHits; //!
 
   TTree *mTreeTracks = nullptr;
-  static const int kMaxTracks = 1024;
+  static const int kMaxTracks = 1048576;
   struct Tracks_t {
     int    n;
     int    parent[kMaxTracks];

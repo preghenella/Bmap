@@ -47,7 +47,7 @@ StackingAction::SetNewValue(G4UIcommand *command, G4String value)
 G4ClassificationOfNewTrack
 StackingAction::ClassifyNewTrack(const G4Track *aTrack)
 {
-  if (aTrack->GetParentID() != 0) return fKill;
+  //  if (aTrack->GetParentID() != 0) return fKill;
   if (aTrack->GetCurrentStepNumber() == 0) RootIO::Instance()->AddTrack(aTrack);
   return fUrgent;
 

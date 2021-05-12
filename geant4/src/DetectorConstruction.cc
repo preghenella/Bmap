@@ -11,10 +11,15 @@
 #include "G4SDManager.hh"
 #include "MagneticField.hh"
 #include "G4FieldManager.hh"
+#include "G4tgbVolumeMgr.hh"
+#include "G4tgrMessenger.hh"
+#include "G4tgbMaterialMgr.hh"
+#include "G4LogicalVolumeStore.hh"
 
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
 
+#include "g4dRIChOptics.hh"
 
 /*****************************************************************/
 
@@ -54,11 +59,13 @@ DetectorConstruction::Construct() {
 
   /** materials **/
   G4NistManager *nist = G4NistManager::Instance();
-  auto air = nist->FindOrBuildMaterial("G4_AIR");
+  auto vacuum_m = nist->FindOrBuildMaterial("G4_Galactic");
+  auto air_m = nist->FindOrBuildMaterial("G4_AIR");
+  
   
   /** world **/
   auto world_s = new G4Box("world_s", 4. * m, 4. * m, 6. * m);
-  auto world_lv = new G4LogicalVolume(world_s, air, "world_lv");
+  auto world_lv = new G4LogicalVolume(world_s, air_m, "world_lv");
   auto world_pv = new G4PVPlacement(0,                // no rotation
 				    G4ThreeVector(),  // at (0,0,0)
 				    world_lv,         // its logical volume
@@ -70,7 +77,7 @@ DetectorConstruction::Construct() {
 
   /** magnetic **/
   auto magnetic_s = new G4Tubs("magnetic_s", 0., 4. * m, 6. * m, 0., 2. * M_PI);
-  auto magnetic_lv = new G4LogicalVolume(magnetic_s, air, "magnetic_lv");
+  auto magnetic_lv = new G4LogicalVolume(magnetic_s, air_m, "magnetic_lv");
   auto magnetic_pv = new G4PVPlacement(nullptr,
 				       G4ThreeVector(),
 				       magnetic_lv,
@@ -79,47 +86,33 @@ DetectorConstruction::Construct() {
 				       false,
 				       0,
 				       false);
-
-#if 0
-  /** radiator **/
-  auto radiator_s = new G4Cons("radiator_s",
-			       0.1 * m, 1.0 * m,
-			       0.1 * m, 2.0 * m,
-			       0.75 * m,
-			       0., 2. * M_PI);
-  auto radiator_lv = new G4LogicalVolume(radiator_s, air, "radiator_lv");
-  auto radiator_pv = new G4PVPlacement(nullptr,
-				       G4ThreeVector(0., 0., (1.5 + 0.75) * m),
-				       radiator_lv,
-				       "radiator_pv",
-				       magnetic_lv,
-				       false,
-				       0,
-				       false);
-#endif
-
-  auto thetamin = std::atan2(0.1, 1.5);
-  auto thetamax = std::atan2(2.0, 3.0);
   
-  /** radiator **/
-  auto radiator_s = new G4Sphere("radiator_s",
-				 1.5 * m, 3.0 * m,
-				 0., 2. * M_PI,
-				 thetamin, thetamax - thetamin);
-  auto radiator_lv = new G4LogicalVolume(radiator_s, air, "radiator_lv");
-  auto radiator_pv = new G4PVPlacement(nullptr,
-				       G4ThreeVector(),
-				       radiator_lv,
-				       "radiator_pv",
-				       magnetic_lv,
-				       false,
-				       0,
-				       false);
+  /** text geometry **/
+  auto volmgr = G4tgbVolumeMgr::GetInstance();
+  volmgr->AddTextFile("drich-g4model.txt");
+  auto text_pv = volmgr->ReadAndConstructDetector();
+  auto tran = text_pv->GetTranslation();
+  auto move = G4ThreeVector(0., 0., 2. * m);
+  tran += move;
+  text_pv->SetTranslation(tran);
+  magnetic_lv->AddDaughter(text_pv);
+
+  //  auto aeroPO = new g4dRIChAerogel("ciDRICHaerogelMat"); // (optical) model parameters
+  //  aeroPO->setOpticalParams(3); // mode=3: use experimental data  
+
+  //  auto acryPO = new g4dRIChFilter("ciDRICHfilterMat"); // (optical) model parameters
+  //  acryPO->setOpticalParams(300. * nm);
   
-  mMagneticLogical = magnetic_lv;
-  mRadiatorLogical = radiator_lv;
+  auto gasPO = new g4dRIChGas("ciDRICHgasMat");
+  gasPO->setOpticalParams();
+  
+  auto photoSensor = new g4dRIChPhotosensor("ciDRICHpsst"); 
+  photoSensor->setOpticalParams("ciDRICH");
+
+  auto mirror = new g4dRIChMirror("ciDRICHmirror"); 
+  mirror->setOpticalParams("ciDRICH");
+  
   return world_pv;
-
 }
 
 /*****************************************************************/
@@ -127,9 +120,9 @@ DetectorConstruction::Construct() {
 void
 DetectorConstruction::ConstructSDandField()
 {
-  auto radiator_sd = new SensitiveDetector("radiator_sd");
-  G4SDManager::GetSDMpointer()->AddNewDetector(radiator_sd);
-  SetSensitiveDetector("radiator_lv", radiator_sd);
+  auto ciDRICHvessel_sd = new SensitiveDetector("ciDRICHvessel_sd");
+  G4SDManager::GetSDMpointer()->AddNewDetector(ciDRICHvessel_sd);
+  SetSensitiveDetector("ciDRICHvessel", ciDRICHvessel_sd);
 
   auto magneticField = new MagneticField();
   auto fieldManager = new G4FieldManager();
@@ -141,14 +134,14 @@ DetectorConstruction::ConstructSDandField()
   fieldManagerZero->SetDetectorField(magneticFieldZero);
   fieldManagerZero->CreateChordFinder(magneticFieldZero);
 
-  mMagneticLogical->SetFieldManager(fieldManager, false);
+  auto magnetic_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("magnetic_lv");
+  magnetic_lv->SetFieldManager(fieldManager, false);
 
+  auto ciDRICHvessel_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("ciDRICHvessel");
   if (mRadiatorField == kRadiatorFieldMap)
-    mRadiatorLogical->SetFieldManager(fieldManager, false);
+    ciDRICHvessel_lv->SetFieldManager(fieldManager, true);
   else if (mRadiatorField == kRadiatorFieldZero)
-    mRadiatorLogical->SetFieldManager(fieldManagerZero, false);
+    ciDRICHvessel_lv->SetFieldManager(fieldManagerZero, true);
 
 }
-
-/*****************************************************************/
 
