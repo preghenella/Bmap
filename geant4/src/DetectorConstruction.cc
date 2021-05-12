@@ -12,10 +12,22 @@
 #include "MagneticField.hh"
 #include "G4FieldManager.hh"
 
+#include "G4UIdirectory.hh"
+#include "G4UIcmdWithAString.hh"
+
+
 /*****************************************************************/
 
 DetectorConstruction::DetectorConstruction()
 {
+  mRadiatorDirectory = new G4UIdirectory("/radiator/");
+  
+  mRadiatorFieldCmd = new G4UIcmdWithAString("/radiator/field", this);
+  mRadiatorFieldCmd->SetGuidance("Select field in radiator volume");
+  mRadiatorFieldCmd->SetParameterName("field", false);
+  mRadiatorFieldCmd->SetCandidates("map zero");
+  mRadiatorFieldCmd->AvailableForStates(G4State_PreInit);
+
 }
 
 /*****************************************************************/
@@ -29,6 +41,10 @@ DetectorConstruction::~DetectorConstruction()
 void
 DetectorConstruction::SetNewValue(G4UIcommand *command, G4String value)
 {
+  if (command == mRadiatorFieldCmd) {
+    if (value.compare("map") == 0) mRadiatorField = kRadiatorFieldMap;
+    if (value.compare("zero") == 0) mRadiatorField = kRadiatorFieldZero;
+  }
 }
   
 /*****************************************************************/
@@ -125,8 +141,13 @@ DetectorConstruction::ConstructSDandField()
   fieldManagerZero->SetDetectorField(magneticFieldZero);
   fieldManagerZero->CreateChordFinder(magneticFieldZero);
 
-  mMagneticLogical->SetFieldManager(fieldManagerZero, false);
-  mRadiatorLogical->SetFieldManager(fieldManager, false);
+  mMagneticLogical->SetFieldManager(fieldManager, false);
+
+  if (mRadiatorField == kRadiatorFieldMap)
+    mRadiatorLogical->SetFieldManager(fieldManager, false);
+  else if (mRadiatorField == kRadiatorFieldZero)
+    mRadiatorLogical->SetFieldManager(fieldManagerZero, false);
+
 }
 
 /*****************************************************************/

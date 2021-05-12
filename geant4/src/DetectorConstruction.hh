@@ -10,6 +10,9 @@
 class G4String;
 class G4LogicalVolume;
 
+class G4UIdirectory;
+class G4UIcmdWithAString;
+
 class DetectorConstruction : public G4VUserDetectorConstruction,
 			     public G4UImessenger
 {
@@ -28,6 +31,16 @@ protected:
 
   G4LogicalVolume *mMagneticLogical = nullptr;
   G4LogicalVolume *mRadiatorLogical = nullptr;
+
+  G4UIdirectory *mRadiatorDirectory;
+  G4UIcmdWithAString *mRadiatorFieldCmd;
+  
+  enum ERadiatorField_t {
+    kRadiatorFieldMap,
+    kRadiatorFieldZero
+  };
+  ERadiatorField_t mRadiatorField = kRadiatorFieldMap;
+  
   
 };
 
