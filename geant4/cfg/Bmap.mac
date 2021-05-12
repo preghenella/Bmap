@@ -1,0 +1,51 @@
+### define field in radiator volume, current possibilities are 'map' or 'zero'
+
+/radiator/field map
+
+### define the prefix of the output file name
+
+/io/prefix Bmap.field.map
+
+### initialize the run
+
+/run/initialize
+
+### define particle source, current possibilities are 'gun' or 'gps'
+### refer to Geant4 reference manual on how to configure 'gun' and 'gps' sources
+### currently we select a 'gps' source and define it to be
+### an isotropic particle source with emission over the full azimuth
+### limited within the specified polar angles 
+
+/generator/select gps
+/gps/ang/type iso
+/gps/ang/mintheta 2.5535901 rad
+/gps/ang/maxtheta 3.0750245 rad
+
+### define the particle specie for the 
+
+/gps/particle mu-
+
+### define particle energy (mono energetic) and fire 10k particles (run 000)
+
+/gps/ene/mono 3.0 GeV
+/run/beamOn 10000
+
+### change the energy and fire 10k particles (run 001)
+
+/gps/ene/mono 30.0 GeV
+/run/beamOn 10000
+
+### change the particle specie
+
+/gps/particle proton
+
+### define particle energy (mono energetic) and fire 10k particles (run 002)
+
+/gps/ene/mono 3.0 GeV
+/run/beamOn 10000
+
+### change the energy and fire 10k particles (run 003)
+
+/gps/ene/mono 30.0 GeV
+/run/beamOn 10000
+
