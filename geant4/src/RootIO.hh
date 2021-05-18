@@ -45,7 +45,6 @@ public:
   void ResetHits();
   void FillHits();
   void AddHit(const G4Track *aTrack, const G4StepPoint *aPoint);
-  void ProcessHits(const G4Step *aStep);  
 
   void ResetTracks();
   void FillTracks();

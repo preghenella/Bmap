@@ -197,23 +197,3 @@ RootIO::AddTrack(const G4Track *aTrack)
 }
 
 /*****************************************************************/
-
-void
-RootIO::ProcessHits(const G4Step *aStep)
-{
-  bool first = aStep->IsFirstStepInVolume();
-  bool last = aStep->IsLastStepInVolume();
-  auto track = aStep->GetTrack();
-
-  if (first) {
-    auto point = aStep->GetPreStepPoint();
-    AddHit(track, point);
-  }
-  if (last) {
-    auto point = aStep->GetPostStepPoint();
-    AddHit(track, point);
-  }
-  
-}
-
-/*****************************************************************/

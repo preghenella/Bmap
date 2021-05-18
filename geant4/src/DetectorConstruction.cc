@@ -120,9 +120,9 @@ DetectorConstruction::Construct() {
 void
 DetectorConstruction::ConstructSDandField()
 {
-  auto ciDRICHvessel_sd = new SensitiveDetector("ciDRICHvessel_sd");
-  G4SDManager::GetSDMpointer()->AddNewDetector(ciDRICHvessel_sd);
-  SetSensitiveDetector("ciDRICHvessel", ciDRICHvessel_sd);
+  auto ciDRICHpsst_sd = new SensitiveDetector("ciDRICHpsst_sd");
+  G4SDManager::GetSDMpointer()->AddNewDetector(ciDRICHpsst_sd);
+  SetSensitiveDetector("ciDRICHpsst", ciDRICHpsst_sd);
 
   auto magneticField = new MagneticField();
   auto fieldManager = new G4FieldManager();
