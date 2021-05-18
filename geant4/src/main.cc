@@ -4,6 +4,7 @@
 #include "G4UImanager.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "FTFP_BERT.hh"
+#include "G4OpticalPhysics.hh"
 #include "DetectorConstruction.hh"
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
@@ -17,8 +18,9 @@ main(int argc, char **argv)
 {
   auto ui = new G4UIExecutive(argc, argv, "tcsh");
 
-  auto run = new G4RunManager(); //G4RunManagerFactory::CreateRunManager();
+  auto run = new G4RunManager();
   auto physics = new FTFP_BERT;
+  physics->RegisterPhysics(new G4OpticalPhysics());
   auto detector = new DetectorConstruction();
   run->SetUserInitialization(detector);
   run->SetUserInitialization(physics);

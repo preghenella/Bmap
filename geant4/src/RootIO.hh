@@ -45,7 +45,6 @@ public:
   void ResetHits();
   void FillHits();
   void AddHit(const G4Track *aTrack, const G4StepPoint *aPoint);
-  void ProcessHits(const G4Step *aStep);  
 
   void ResetTracks();
   void FillTracks();
@@ -64,7 +63,7 @@ private:
   G4UIcmdWithAString *mFileNameCmd;
   
   TTree *mTreeHits = nullptr;
-  static const int kMaxHits = 1024;
+  static const int kMaxHits = 1048576;
   struct Hits_t {
     int    n;
     int    trkid[kMaxHits];
@@ -79,7 +78,7 @@ private:
   } mHits; //!
 
   TTree *mTreeTracks = nullptr;
-  static const int kMaxTracks = 1024;
+  static const int kMaxTracks = 1048576;
   struct Tracks_t {
     int    n;
     int    parent[kMaxTracks];

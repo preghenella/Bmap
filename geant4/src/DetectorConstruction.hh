@@ -9,6 +9,8 @@
 
 class G4String;
 class G4LogicalVolume;
+class G4Material;
+class G4OpticalSurface;
 
 class G4UIdirectory;
 class G4UIcmdWithAString;
@@ -32,6 +34,13 @@ protected:
   G4LogicalVolume *mMagneticLogical = nullptr;
   G4LogicalVolume *mRadiatorLogical = nullptr;
 
+  G4Material *ConstructMaterialAluminum();
+  G4Material *ConstructMaterialSilicon();
+  G4Material *ConstructMaterialC2F6(bool isConstN = false, double constN = 1.00082);
+
+  G4OpticalSurface *ConstructOpticalSurfaceMirror(G4String name);
+  G4OpticalSurface *ConstructOpticalSurfaceSensor(G4String name);
+  
   G4UIdirectory *mRadiatorDirectory;
   G4UIcmdWithAString *mRadiatorFieldCmd;
   

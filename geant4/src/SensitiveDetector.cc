@@ -36,7 +36,10 @@ SensitiveDetector::EndOfEvent(G4HCofThisEvent *hce)
 G4bool
 SensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhist)
 {  
-  RootIO::Instance()->ProcessHits(aStep);  
+  if (!aStep->IsFirstStepInVolume()) return true;
+  auto track = aStep->GetTrack();
+  auto point = aStep->GetPreStepPoint();
+  RootIO::Instance()->AddHit(track, point);  
   return true;
 }
 

@@ -47,9 +47,16 @@ StackingAction::SetNewValue(G4UIcommand *command, G4String value)
 G4ClassificationOfNewTrack
 StackingAction::ClassifyNewTrack(const G4Track *aTrack)
 {
-  if (aTrack->GetParentID() != 0) return fKill;
+  /** add all tracks at first step **/
   if (aTrack->GetCurrentStepNumber() == 0) RootIO::Instance()->AddTrack(aTrack);
-  return fUrgent;
+
+  /** transport primary particles **/
+  if (aTrack->GetParentID() == 0) return fUrgent;
+  /** transport optical photons **/
+  if (aTrack->GetParticleDefinition()->GetPDGEncoding() == -22) return fUrgent;
+
+  /** kill the rest **/
+  return fKill;
 
 #if 0
   bool doTransport = false;
