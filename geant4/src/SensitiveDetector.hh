@@ -7,11 +7,21 @@ class SensitiveDetector : public G4VSensitiveDetector {
   
 public:
   
-  SensitiveDetector(const G4String &name);
-  ~SensitiveDetector() override;
+  SensitiveDetector(const G4String &name) : G4VSensitiveDetector(name) {};
+  ~SensitiveDetector() {};
+  
+protected:
 
-  void Initialize(G4HCofThisEvent *hce) override;
-  void EndOfEvent(G4HCofThisEvent *hce) override;
+  G4bool ProcessHits(G4Step *aStep, G4TouchableHistory *ROhist) override;
+  
+};
+
+class SensitiveDetectorTrack : public G4VSensitiveDetector {
+  
+public:
+  
+  SensitiveDetectorTrack(const G4String &name) : G4VSensitiveDetector(name) {};
+  ~SensitiveDetectorTrack() {};
   
 protected:
 

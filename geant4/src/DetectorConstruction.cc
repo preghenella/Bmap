@@ -95,7 +95,7 @@ DetectorConstruction::Construct() {
   auto thetamin = std::atan2(0.1, 1.5);
   auto thetamax = std::atan2(2.0, 3.0);
   auto thetadelta = thetamax - thetamin;
-
+  
   /** radiator **/
   auto radiator_s = new G4Sphere("radiator_s",
 				 radiusmin, radiusmax,
@@ -156,6 +156,49 @@ DetectorConstruction::Construct() {
 					      sensor_os);
   
   
+  /** phantom trackers **/
+  auto tracker0_s = new G4Sphere("tracker0_s",
+				 radiusmin - 100. * um, radiusmin,
+				 0., 2. * M_PI,
+				 thetamin, thetadelta);
+  auto tracker0_lv = new G4LogicalVolume(tracker0_s, air_m, "tracker0_lv");
+  auto tracker0_pv = new G4PVPlacement(nullptr,
+				       G4ThreeVector(),
+				       tracker0_lv,
+				       "tracker0_pv",
+				       magnetic_lv,
+				       false,
+				       0,
+				       false);
+  
+  auto tracker1_s = new G4Sphere("tracker1_s",
+				 0.5 * (radiusmin + radiusmax) - 50. * um, 0.5 * (radiusmin + radiusmax) + 50. * um,
+				 0., 2. * M_PI,
+				 thetamin, thetadelta);
+  auto tracker1_lv = new G4LogicalVolume(tracker1_s, c2f6_m, "tracker1_lv");
+  auto tracker1_pv = new G4PVPlacement(nullptr,
+				       G4ThreeVector(),
+				       tracker1_lv,
+				       "tracker1_pv",
+				       radiator_lv,
+				       false,
+				       0,
+				       false);
+  
+  auto tracker2_s = new G4Sphere("tracker2_s",
+				 radiusmax, radiusmax + 100. * um,
+				 0., 2. * M_PI,
+				 thetamin, thetadelta);
+  auto tracker2_lv = new G4LogicalVolume(tracker2_s, air_m, "tracker2_lv");
+  auto tracker2_pv = new G4PVPlacement(nullptr,
+				       G4ThreeVector(),
+				       tracker2_lv,
+				       "tracker2_pv",
+				       magnetic_lv,
+				       false,
+				       0,
+				       false);
+  
   mMagneticLogical = magnetic_lv;
   mRadiatorLogical = radiator_lv;
   return world_pv;
@@ -169,8 +212,16 @@ DetectorConstruction::ConstructSDandField()
 {
   auto sensor_sd = new SensitiveDetector("sensor_sd");
   G4SDManager::GetSDMpointer()->AddNewDetector(sensor_sd);
+  //  SetSensitiveDetector("tracker0_lv", sensor_sd);
+  //  SetSensitiveDetector("tracker1_lv", sensor_sd);
+  //  SetSensitiveDetector("tracker2_lv", sensor_sd);
   SetSensitiveDetector("sensor_lv", sensor_sd);
 
+  auto tracker_sd = new SensitiveDetectorTrack("tracker_sd");
+  G4SDManager::GetSDMpointer()->AddNewDetector(tracker_sd);
+  SetSensitiveDetector("tracker1_lv", tracker_sd);
+
+  
   auto magneticField = new MagneticField();
   auto fieldManager = new G4FieldManager();
   fieldManager->SetDetectorField(magneticField);
