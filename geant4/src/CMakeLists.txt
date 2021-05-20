@@ -4,6 +4,7 @@ set(SOURCES
   SensitiveDetector.cc
   PrimaryGeneratorAction.cc
   StackingAction.cc
+  SteppingAction.cc
   EventAction.cc
   RunAction.cc
   RootIO.cc
@@ -15,6 +16,7 @@ set(HEADERS
   SensitiveDetector.hh
   PrimaryGeneratorAction.hh
   StackingAction.hh
+  SteppingAction.hh
   EventAction.hh
   RunAction.hh
   RootIO.hh

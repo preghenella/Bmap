@@ -9,6 +9,7 @@
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
 #include "StackingAction.hh"
+#include "SteppingAction.hh"
 #include "RunAction.hh"
 #include "EventAction.hh"
 #include "RootIO.hh"
@@ -27,15 +28,17 @@ main(int argc, char **argv)
   
   //  run->Initialize();
 
-  auto action_generator = new PrimaryGeneratorAction();
+  auto generator_action = new PrimaryGeneratorAction();
   auto stacking_action = new StackingAction();
-  auto action_run = new RunAction();
-  auto action_event = new EventAction();
+  auto stepping_action = new SteppingAction();
+  auto run_action = new RunAction();
+  auto event_action = new EventAction();
 
-  run->SetUserAction(action_generator);
+  run->SetUserAction(generator_action);
   run->SetUserAction(stacking_action);
-  run->SetUserAction(action_run);
-  run->SetUserAction(action_event);
+  //  run->SetUserAction(stepping_action);
+  run->SetUserAction(run_action);
+  run->SetUserAction(event_action);
   
   // initialize RootIO messenger
   RootIO::Instance()->InitMessenger();
