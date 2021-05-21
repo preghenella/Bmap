@@ -48,6 +48,12 @@ DetectorConstruction::DetectorConstruction()
   mRadiatorFieldCmd->SetCandidates("map zero");
   mRadiatorFieldCmd->AvailableForStates(G4State_PreInit);
 
+  mRadiatorChromaCmd = new G4UIcmdWithAString("/radiator/chroma", this);
+  mRadiatorChromaCmd->SetGuidance("Select chromaticity in radiator volume");
+  mRadiatorChromaCmd->SetParameterName("field", false);
+  mRadiatorChromaCmd->SetCandidates("real zero");
+  mRadiatorChromaCmd->AvailableForStates(G4State_PreInit);
+
 }
 
 /*****************************************************************/
@@ -69,6 +75,11 @@ DetectorConstruction::SetNewValue(G4UIcommand *command, G4String value)
   if (command == mRadiatorFieldCmd) {
     if (value.compare("map") == 0) mRadiatorField = kRadiatorFieldMap;
     if (value.compare("zero") == 0) mRadiatorField = kRadiatorFieldZero;
+  }
+
+  if (command == mRadiatorChromaCmd) {
+    if (value.compare("real") == 0) mRadiatorChroma = kRadiatorChromaReal;
+    if (value.compare("zero") == 0) mRadiatorChroma = kRadiatorChromaZero;
   }
 }
   
@@ -443,6 +454,11 @@ DetectorConstruction::ConstructMaterialSilicon()
 G4Material *
 DetectorConstruction::ConstructMaterialC2F6(bool isConstN, double constN)
 {
+
+  if (mRadiatorChroma == kRadiatorChromaZero) {
+    isConstN = true;
+    constN = 1.00083;
+  }
 
   /** elements and material **/
   G4Element *C = new G4Element("C2F6_Carbon", "C", 6, 12.011 * g/mole);

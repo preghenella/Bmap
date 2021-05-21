@@ -64,6 +64,14 @@ protected:
   };
   ERadiatorField_t mRadiatorField = kRadiatorFieldMap;
   
+  G4UIcmdWithAString *mRadiatorChromaCmd;
+  
+  enum ERadiatorChroma_t {
+    kRadiatorChromaReal,
+    kRadiatorChromaZero
+  };
+  ERadiatorChroma_t mRadiatorChroma = kRadiatorChromaReal;
+  
   
 };
 
