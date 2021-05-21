@@ -75,6 +75,7 @@ private:
     float  px[kMaxHits];
     float  py[kMaxHits];
     float  pz[kMaxHits];
+    int    petal[kMaxHits];
   } mHits; //!
 
   TTree *mTreeTracks = nullptr;

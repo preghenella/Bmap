@@ -98,6 +98,7 @@ RootIO::Open(std::string filename)
   mTreeHits->Branch("px"     , &mHits.px     , "px[n]/F");
   mTreeHits->Branch("py"     , &mHits.py     , "py[n]/F");
   mTreeHits->Branch("pz"     , &mHits.pz     , "pz[n]/F");
+  mTreeHits->Branch("petal"  , &mHits.petal  , "petal[n]/I");
 
   mTreeTracks = new TTree("Tracks", "RootIO tree");
   mTreeTracks->Branch("n"        , &mTracks.n        , "n/I");
@@ -162,6 +163,12 @@ RootIO::FillTracks()
 void
 RootIO::AddHit(const G4Track *aTrack, const G4StepPoint *aPoint)
 {
+  auto ipetal = 0;
+  /** this is to get in which dRICH petal we are **/
+  if (aPoint->GetTouchableHandle()->GetVolume(0)->GetName() == "ciDRICHpsst") {
+    ipetal = aPoint->GetTouchableHandle()->GetCopyNumber(1);
+  }
+  
   mHits.trkid[mHits.n]  = aTrack->GetTrackID() - 1;
   mHits.t[mHits.n]      = aPoint->GetGlobalTime()    / ns;
   mHits.x[mHits.n]      = aPoint->GetPosition().x()  / cm;
@@ -171,6 +178,7 @@ RootIO::AddHit(const G4Track *aTrack, const G4StepPoint *aPoint)
   mHits.px[mHits.n]     = aPoint->GetMomentum().x()  / GeV;
   mHits.py[mHits.n]     = aPoint->GetMomentum().y()  / GeV;
   mHits.pz[mHits.n]     = aPoint->GetMomentum().z()  / GeV;
+  mHits.petal[mHits.n]  = ipetal;
   mHits.n++;
 }
 

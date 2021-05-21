@@ -1,32 +1,33 @@
 TTree *mTreeHits = nullptr;
 static const int kMaxHits = 1048576;
 struct Hits_t {
-  int     n;
-  int     trkid[kMaxHits];
-  double  t[kMaxHits];
-  double  x[kMaxHits];
-  double  y[kMaxHits];
-  double  z[kMaxHits];
-  double  e[kMaxHits];
-  double  px[kMaxHits];
-  double  py[kMaxHits];
-  double  pz[kMaxHits];
+  int    n;
+  int    trkid[kMaxHits];
+  float  t[kMaxHits];
+  float  x[kMaxHits];
+  float  y[kMaxHits];
+  float  z[kMaxHits];
+  float  e[kMaxHits];
+  float  px[kMaxHits];
+  float  py[kMaxHits];
+  float  pz[kMaxHits];
+  int     petal[kMaxHits];
 } mHits;
 
 TTree *mTreeTracks = nullptr;
 static const int kMaxTracks = 1048576;
 struct Tracks_t {
-  int     n;
-  int     parent[kMaxTracks];
-  int     pdg[kMaxTracks];
-  double  vt[kMaxTracks];
-  double  vx[kMaxTracks];
-  double  vy[kMaxTracks];
-  double  vz[kMaxTracks];
-  double  e[kMaxTracks];
-  double  px[kMaxTracks];
-  double  py[kMaxTracks];
-  double  pz[kMaxTracks];
+  int    n;
+  int    parent[kMaxTracks];
+  int    pdg[kMaxTracks];
+  float  vt[kMaxTracks];
+  float  vx[kMaxTracks];
+  float  vy[kMaxTracks];
+  float  vz[kMaxTracks];
+  float  e[kMaxTracks];
+  float  px[kMaxTracks];
+  float  py[kMaxTracks];
+  float  pz[kMaxTracks];
 } mTracks;
 
 void
@@ -47,6 +48,7 @@ io(const char *fname)
   mTreeHits->SetBranchAddress("px",    &mHits.px);
   mTreeHits->SetBranchAddress("py",    &mHits.py);
   mTreeHits->SetBranchAddress("pz",    &mHits.pz);
+  mTreeHits->SetBranchAddress("petal", &mHits.petal);
 
   // connect tracks tree
   mTreeTracks = (TTree *)fin->Get("Tracks");

@@ -13,7 +13,7 @@ SensitiveDetector::ProcessHits(G4Step *aStep, G4TouchableHistory *ROhist)
   auto track = aStep->GetTrack();
   if (track->GetParentID() == 0) return true;
   auto point = aStep->GetPreStepPoint();
-  RootIO::Instance()->AddHit(track, point);  
+  RootIO::Instance()->AddHit(track, point);
   return true;
 }
 

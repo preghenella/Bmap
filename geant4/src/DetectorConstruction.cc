@@ -17,15 +17,29 @@
 #include "G4OpticalSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
+#include "G4tgbVolumeMgr.hh"
+#include "G4tgrMessenger.hh"
+#include "G4tgbMaterialMgr.hh"
+#include "G4LogicalVolumeStore.hh"
+#include "G4PhysicalVolumeStore.hh"
 
 #include "G4UIdirectory.hh"
 #include "G4UIcmdWithAString.hh"
 
+#include "g4dRIChOptics.hh"
 
 /*****************************************************************/
 
 DetectorConstruction::DetectorConstruction()
 {
+  mDetectorDirectory = new G4UIdirectory("/detector/");
+  
+  mDetectorSelectCmd = new G4UIcmdWithAString("/detector/select", this);
+  mDetectorSelectCmd->SetGuidance("Select detector");
+  mDetectorSelectCmd->SetParameterName("select", false);
+  mDetectorSelectCmd->SetCandidates("ideal drich");
+  mDetectorSelectCmd->AvailableForStates(G4State_PreInit, G4State_Idle);
+
   mRadiatorDirectory = new G4UIdirectory("/radiator/");
   
   mRadiatorFieldCmd = new G4UIcmdWithAString("/radiator/field", this);
@@ -47,6 +61,11 @@ DetectorConstruction::~DetectorConstruction()
 void
 DetectorConstruction::SetNewValue(G4UIcommand *command, G4String value)
 {
+  if (command == mDetectorSelectCmd) {
+    if (value.compare("ideal") == 0) mDetectorSelect = kDetectorSelectIdealRICH;
+    if (value.compare("drich") == 0) mDetectorSelect = kDetectorSelectDualRICH;
+  }
+
   if (command == mRadiatorFieldCmd) {
     if (value.compare("map") == 0) mRadiatorField = kRadiatorFieldMap;
     if (value.compare("zero") == 0) mRadiatorField = kRadiatorFieldZero;
@@ -56,14 +75,14 @@ DetectorConstruction::SetNewValue(G4UIcommand *command, G4String value)
 /*****************************************************************/
 
 G4VPhysicalVolume *
-DetectorConstruction::Construct() {
-
+DetectorConstruction::ConstructIdealRICH() {
+  
   /** materials **/
   G4NistManager *nist = G4NistManager::Instance();
   auto air_m = nist->FindOrBuildMaterial("G4_AIR");
   auto aluminum_m = ConstructMaterialAluminum();
   auto silicon_m = ConstructMaterialSilicon();
-  auto c2f6_m = ConstructMaterialC2F6();//true, 1.00082);
+  auto c2f6_m = ConstructMaterialC2F6();
   
   /** world **/
   auto world_s = new G4Box("world_s", 4. * m, 4. * m, 6. * m);
@@ -88,7 +107,6 @@ DetectorConstruction::Construct() {
 				       false,
 				       0,
 				       false);
-
   /** RICH geometry **/
   auto radiusmin = 1.5 * m;
   auto radiusmax = 3.0 * m;
@@ -198,30 +216,118 @@ DetectorConstruction::Construct() {
 				       false,
 				       0,
 				       false);
-  
-  mMagneticLogical = magnetic_lv;
-  mRadiatorLogical = radiator_lv;
-  return world_pv;
 
+  return world_pv;
+}
+
+/*****************************************************************/
+
+G4VPhysicalVolume *
+DetectorConstruction::ConstructDualRICH() {
+
+  /** materials **/
+  G4NistManager *nist = G4NistManager::Instance();
+  auto air_m = nist->FindOrBuildMaterial("G4_AIR");
+  auto aluminum_m = ConstructMaterialAluminum();
+  auto silicon_m = ConstructMaterialSilicon();
+  auto c2f6_m = ConstructMaterialC2F6();//true, 1.00082);
+  auto vacuum_m = nist->FindOrBuildMaterial("G4_Galactic");
+  
+  /** world **/
+  auto world_s = new G4Box("world_s", 4. * m, 4. * m, 6. * m);
+  auto world_lv = new G4LogicalVolume(world_s, air_m, "world_lv");
+  auto world_pv = new G4PVPlacement(0,                // no rotation
+				    G4ThreeVector(),  // at (0,0,0)
+				    world_lv,         // its logical volume
+				    "world_pv",       // its name
+				    0,                // its mother  volume
+				    false,            // no boolean operations
+				    0,                // copy number
+				    false);           // checking overlaps    
+
+  /** magnetic **/
+  auto magnetic_s = new G4Tubs("magnetic_s", 0., 4. * m, 6. * m, 0., 2. * M_PI);
+  auto magnetic_lv = new G4LogicalVolume(magnetic_s, air_m, "magnetic_lv");
+  auto magnetic_pv = new G4PVPlacement(nullptr,
+				       G4ThreeVector(),
+				       magnetic_lv,
+				       "magnetic_pv",
+				       world_lv,
+				       false,
+				       0,
+				       false);
+
+  /** text geometry **/
+  auto volmgr = G4tgbVolumeMgr::GetInstance();
+  volmgr->AddTextFile("drich-g4model.txt");
+  auto text_pv = volmgr->ReadAndConstructDetector();
+  auto tran = text_pv->GetTranslation();
+  auto move = G4ThreeVector(0., 0., 2.5 * m);
+  tran += move;
+  text_pv->SetTranslation(tran);
+  magnetic_lv->AddDaughter(text_pv);
+
+  //  auto aeroPO = new g4dRIChAerogel("ciDRICHaerogelMat"); // (optical) model parameters
+  //  aeroPO->setOpticalParams(3); // mode=3: use experimental data  
+
+  //  auto acryPO = new g4dRIChFilter("ciDRICHfilterMat"); // (optical) model parameters
+  //  acryPO->setOpticalParams(300. * nm);
+  
+  auto gasPO = new g4dRIChGas("ciDRICHgasMat");
+  gasPO->setOpticalParams();
+  
+  auto photoSensor = new g4dRIChPhotosensor("ciDRICHpsst"); 
+  photoSensor->setOpticalParams("ciDRICH");
+
+  auto mirror = new g4dRIChMirror("ciDRICHmirror"); 
+  mirror->setOpticalParams("ciDRICH");
+
+  /** phantom tracker **/
+  auto ciDRICHgasMat_m = G4tgbMaterialMgr::GetInstance()->FindBuiltG4Material("ciDRICHgasMat");
+  auto ciDRICHpetal_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("ciDRICHpetal");
+  auto tracker1_s = new G4Cons("tracker1_s",
+			       9.5 * cm, 210.5 * cm,
+			       9.5 * cm, 210.5 * cm,
+			       50. * um,
+			       -30 * deg, 60 * deg);
+  auto tracker1_lv = new G4LogicalVolume(tracker1_s, ciDRICHgasMat_m, "tracker1_lv");
+  auto tracker1_pv = new G4PVPlacement(nullptr,
+				       G4ThreeVector(),
+				       tracker1_lv,
+				       "tracker1_pv",
+				       ciDRICHpetal_lv,
+				       false,
+				       0,
+				       false);
+
+  
+  return world_pv;
+}
+
+/*****************************************************************/
+
+G4VPhysicalVolume *
+DetectorConstruction::Construct() {
+  if (mDetectorSelect == kDetectorSelectIdealRICH)
+    return ConstructIdealRICH();
+  else if (mDetectorSelect == kDetectorSelectDualRICH)
+    return ConstructDualRICH();
+  return nullptr;
 }
 
 /*****************************************************************/
 
 void
-DetectorConstruction::ConstructSDandField()
+DetectorConstruction::ConstructSDandFieldIdealRICH()
 {
   auto sensor_sd = new SensitiveDetector("sensor_sd");
   G4SDManager::GetSDMpointer()->AddNewDetector(sensor_sd);
-  //  SetSensitiveDetector("tracker0_lv", sensor_sd);
-  //  SetSensitiveDetector("tracker1_lv", sensor_sd);
-  //  SetSensitiveDetector("tracker2_lv", sensor_sd);
   SetSensitiveDetector("sensor_lv", sensor_sd);
 
   auto tracker_sd = new SensitiveDetectorTrack("tracker_sd");
   G4SDManager::GetSDMpointer()->AddNewDetector(tracker_sd);
   SetSensitiveDetector("tracker1_lv", tracker_sd);
 
-  
   auto magneticField = new MagneticField();
   auto fieldManager = new G4FieldManager();
   fieldManager->SetDetectorField(magneticField);
@@ -232,13 +338,60 @@ DetectorConstruction::ConstructSDandField()
   fieldManagerZero->SetDetectorField(magneticFieldZero);
   fieldManagerZero->CreateChordFinder(magneticFieldZero);
 
-  mMagneticLogical->SetFieldManager(fieldManager, false);
+  auto magnetic_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("magnetic_lv");
+  magnetic_lv->SetFieldManager(fieldManager, false);
 
+  auto radiator_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("radiator_lv");
   if (mRadiatorField == kRadiatorFieldMap)
-    mRadiatorLogical->SetFieldManager(fieldManager, false);
+    radiator_lv->SetFieldManager(fieldManager, true);
   else if (mRadiatorField == kRadiatorFieldZero)
-    mRadiatorLogical->SetFieldManager(fieldManagerZero, false);
+    radiator_lv->SetFieldManager(fieldManagerZero, true);
 
+}
+
+/*****************************************************************/
+
+void
+DetectorConstruction::ConstructSDandFieldDualRICH()
+{
+  auto ciDRICHpsst_sd = new SensitiveDetector("ciDRICHpsst_sd");
+  G4SDManager::GetSDMpointer()->AddNewDetector(ciDRICHpsst_sd);
+  SetSensitiveDetector("ciDRICHpsst", ciDRICHpsst_sd);
+
+  auto tracker_sd = new SensitiveDetectorTrack("tracker_sd");
+  G4SDManager::GetSDMpointer()->AddNewDetector(tracker_sd);
+  SetSensitiveDetector("tracker1_lv", tracker_sd);
+
+  auto magneticField = new MagneticField();
+  auto fieldManager = new G4FieldManager();
+  fieldManager->SetDetectorField(magneticField);
+  fieldManager->CreateChordFinder(magneticField);
+
+  auto magneticFieldZero = new MagneticFieldZero();
+  auto fieldManagerZero = new G4FieldManager();
+  fieldManagerZero->SetDetectorField(magneticFieldZero);
+  fieldManagerZero->CreateChordFinder(magneticFieldZero);
+
+  auto magnetic_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("magnetic_lv");
+  magnetic_lv->SetFieldManager(fieldManager, false);
+
+  auto ciDRICHvessel_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("ciDRICHvessel");
+  if (mRadiatorField == kRadiatorFieldMap)
+    ciDRICHvessel_lv->SetFieldManager(fieldManager, true);
+  else if (mRadiatorField == kRadiatorFieldZero)
+    ciDRICHvessel_lv->SetFieldManager(fieldManagerZero, true);
+
+}
+
+/*****************************************************************/
+
+void
+DetectorConstruction::ConstructSDandField()
+{
+  if (mDetectorSelect == kDetectorSelectIdealRICH)
+    return ConstructSDandFieldIdealRICH();
+  else if (mDetectorSelect == kDetectorSelectDualRICH)
+    return ConstructSDandFieldDualRICH();
 }
 
 /*****************************************************************/
@@ -358,4 +511,3 @@ DetectorConstruction::ConstructOpticalSurfaceSensor(G4String name)
 }
 
 /*****************************************************************/
-

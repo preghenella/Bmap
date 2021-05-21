@@ -1,13 +1,13 @@
 #include "G4RunManager.hh"
-#include "G4RunManagerFactory.hh"
 #include "G4UIExecutive.hh"
 #include "G4UImanager.hh"
-#include "PrimaryGeneratorAction.hh"
+#include "G4GenericPhysicsList.hh"
 #include "FTFP_BERT.hh"
 #include "G4OpticalPhysics.hh"
 #include "DetectorConstruction.hh"
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
+#include "PrimaryGeneratorAction.hh"
 #include "StackingAction.hh"
 #include "SteppingAction.hh"
 #include "RunAction.hh"
@@ -19,7 +19,7 @@ main(int argc, char **argv)
 {
   auto ui = new G4UIExecutive(argc, argv, "tcsh");
 
-  auto run = new G4RunManager();
+  auto run = new G4RunManager;
   auto physics = new FTFP_BERT;
   physics->RegisterPhysics(new G4OpticalPhysics());
   auto detector = new DetectorConstruction();
@@ -43,16 +43,12 @@ main(int argc, char **argv)
   // initialize RootIO messenger
   RootIO::Instance()->InitMessenger();
 
-  G4VisManager* visManager = new G4VisExecutive;
-  // G4VisExecutive can take a verbosity argument - see /vis/verbose guidance.
-  // G4VisManager* visManager = new G4VisExecutive("Quiet");
-  visManager->Initialize();
-
   // start interative session
   if (argc == 1) {
     RootIO::Instance()->setInteractiveMode(true);
+    G4VisManager* visManager = new G4VisExecutive;
+    visManager->Initialize();
     auto ui = new G4UIExecutive(argc, argv, "Qt");
-    //    auto ui = new G4UIExecutive(argc, argv, "tcsh");
     ui->SessionStart();
     delete ui;  
     return 0;

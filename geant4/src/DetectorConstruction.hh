@@ -34,12 +34,26 @@ protected:
   G4LogicalVolume *mMagneticLogical = nullptr;
   G4LogicalVolume *mRadiatorLogical = nullptr;
 
+  G4VPhysicalVolume *ConstructIdealRICH();
+  void ConstructSDandFieldIdealRICH();
+
+  G4VPhysicalVolume *ConstructDualRICH();
+  void ConstructSDandFieldDualRICH();
+  
   G4Material *ConstructMaterialAluminum();
   G4Material *ConstructMaterialSilicon();
   G4Material *ConstructMaterialC2F6(bool isConstN = false, double constN = 1.00082);
 
   G4OpticalSurface *ConstructOpticalSurfaceMirror(G4String name);
   G4OpticalSurface *ConstructOpticalSurfaceSensor(G4String name);
+  
+  G4UIdirectory *mDetectorDirectory;
+  G4UIcmdWithAString *mDetectorSelectCmd;
+  enum EDetectorSelect_t {
+    kDetectorSelectIdealRICH,
+    kDetectorSelectDualRICH
+  };
+  EDetectorSelect_t mDetectorSelect = kDetectorSelectIdealRICH;
   
   G4UIdirectory *mRadiatorDirectory;
   G4UIcmdWithAString *mRadiatorFieldCmd;

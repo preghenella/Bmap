@@ -20,6 +20,7 @@ set(HEADERS
   EventAction.hh
   RunAction.hh
   RootIO.hh
+  g4dRIChOptics.hh
   )
 
 add_executable(${PROJECT_NAME} main.cc ${SOURCES})
