@@ -1,0 +1,14 @@
+/detector/select ideal
+/radiator/chroma zero
+/generator/select gun
+/run/initialize
+
+/control/alias Particles mu-
+/control/alias Directions 0.46964244 0.27572056 0.16528367 0.09982157 0.06044989
+/control/alias Momenta 2.5 5.0 7.5 10. 15. 20. 30. 40. 50.
+/control/alias nEvents 1000
+
+#/control/alias Momenta 15.
+#/control/alias Directions 0.16528367
+
+/control/foreach particle.loop Particle {Particles}

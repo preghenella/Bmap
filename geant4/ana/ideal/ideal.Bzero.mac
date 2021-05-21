@@ -1,0 +1,3 @@
+/radiator/field zero
+/io/prefix ideal.Bzero
+/control/execute ideal.run.mac

@@ -1,0 +1,3 @@
+/radiator/field map
+/io/prefix ideal.Bmap
+/control/execute ideal.run.mac

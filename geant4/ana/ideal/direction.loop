@@ -1,0 +1,2 @@
+/gun/direction {Direction} 0. 1.
+/control/foreach momentum.loop Momentum {Momenta}

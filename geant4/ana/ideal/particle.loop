@@ -1,0 +1,2 @@
+/gun/particle {Particle}
+/control/foreach direction.loop Direction {Directions}
