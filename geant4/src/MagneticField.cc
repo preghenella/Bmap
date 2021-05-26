@@ -59,3 +59,31 @@ MagneticField::GetFieldValue(const G4double Point[4], G4double *Bfield) const
 }
 
 /*****************************************************************/
+
+void
+MagneticFieldProj::GetFieldValue(const G4double Point[4], G4double *Bfield) const
+{
+  MagneticField::GetFieldValue(Point, Bfield);
+
+  auto x = Point[0];
+  auto y = Point[1];
+  auto z = Point[2];
+  auto r = std::hypot(x, y);
+  auto theta = std::atan2(r, z);
+  auto phi = std::atan2(y, x);
+
+  auto br = mBr->Interpolate(r, z);
+  auto bz = mBz->Interpolate(r, z);
+  auto b = std::hypot(bz, br);
+  br = b * std::sin(theta);
+  bz = b * std::cos(theta);
+  auto bx = br * std::cos(phi);
+  auto by = br * std::sin(phi);
+
+  Bfield[0] = bx;
+  Bfield[1] = by;
+  Bfield[2] = bz;
+  
+}
+
+/*****************************************************************/

@@ -60,6 +60,7 @@ protected:
   
   enum ERadiatorField_t {
     kRadiatorFieldMap,
+    kRadiatorFieldProj,
     kRadiatorFieldZero
   };
   ERadiatorField_t mRadiatorField = kRadiatorFieldMap;

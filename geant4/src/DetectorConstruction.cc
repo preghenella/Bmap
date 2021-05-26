@@ -45,7 +45,7 @@ DetectorConstruction::DetectorConstruction()
   mRadiatorFieldCmd = new G4UIcmdWithAString("/radiator/field", this);
   mRadiatorFieldCmd->SetGuidance("Select field in radiator volume");
   mRadiatorFieldCmd->SetParameterName("field", false);
-  mRadiatorFieldCmd->SetCandidates("map zero");
+  mRadiatorFieldCmd->SetCandidates("map proj zero");
   mRadiatorFieldCmd->AvailableForStates(G4State_PreInit);
 
   mRadiatorChromaCmd = new G4UIcmdWithAString("/radiator/chroma", this);
@@ -74,6 +74,7 @@ DetectorConstruction::SetNewValue(G4UIcommand *command, G4String value)
 
   if (command == mRadiatorFieldCmd) {
     if (value.compare("map") == 0) mRadiatorField = kRadiatorFieldMap;
+    if (value.compare("proj") == 0) mRadiatorField = kRadiatorFieldProj;
     if (value.compare("zero") == 0) mRadiatorField = kRadiatorFieldZero;
   }
 
@@ -349,12 +350,19 @@ DetectorConstruction::ConstructSDandFieldIdealRICH()
   fieldManagerZero->SetDetectorField(magneticFieldZero);
   fieldManagerZero->CreateChordFinder(magneticFieldZero);
 
+  auto magneticFieldProj = new MagneticFieldProj();
+  auto fieldManagerProj = new G4FieldManager();
+  fieldManagerProj->SetDetectorField(magneticFieldProj);
+  fieldManagerProj->CreateChordFinder(magneticFieldProj);
+
   auto magnetic_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("magnetic_lv");
   magnetic_lv->SetFieldManager(fieldManager, false);
 
   auto radiator_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("radiator_lv");
   if (mRadiatorField == kRadiatorFieldMap)
     radiator_lv->SetFieldManager(fieldManager, true);
+  else if (mRadiatorField == kRadiatorFieldProj)
+    radiator_lv->SetFieldManager(fieldManagerProj, true);
   else if (mRadiatorField == kRadiatorFieldZero)
     radiator_lv->SetFieldManager(fieldManagerZero, true);
 
@@ -383,12 +391,19 @@ DetectorConstruction::ConstructSDandFieldDualRICH()
   fieldManagerZero->SetDetectorField(magneticFieldZero);
   fieldManagerZero->CreateChordFinder(magneticFieldZero);
 
+  auto magneticFieldProj = new MagneticFieldProj();
+  auto fieldManagerProj = new G4FieldManager();
+  fieldManagerProj->SetDetectorField(magneticFieldProj);
+  fieldManagerProj->CreateChordFinder(magneticFieldProj);
+
   auto magnetic_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("magnetic_lv");
   magnetic_lv->SetFieldManager(fieldManager, false);
 
   auto ciDRICHvessel_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("ciDRICHvessel");
   if (mRadiatorField == kRadiatorFieldMap)
     ciDRICHvessel_lv->SetFieldManager(fieldManager, true);
+  else if (mRadiatorField == kRadiatorFieldProj)
+    ciDRICHvessel_lv->SetFieldManager(fieldManagerProj, true);
   else if (mRadiatorField == kRadiatorFieldZero)
     ciDRICHvessel_lv->SetFieldManager(fieldManagerZero, true);
 

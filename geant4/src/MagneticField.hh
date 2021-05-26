@@ -20,11 +20,29 @@ public:
 
   void GetFieldValue(const G4double Point[4], G4double *Bfield) const override;
 
-private:
+protected:
 
   TGraph2D *mBr = nullptr;
   TGraph2D *mBz = nullptr;
   
+};
+
+/*****************************************************************/
+
+class TGraph2D;
+
+class MagneticFieldProj : public MagneticField
+{
+
+public:
+
+  MagneticFieldProj() : MagneticField() {};
+  ~MagneticFieldProj() override {};
+
+  void GetFieldValue(const G4double Point[4], G4double *Bfield) const override;
+
+private:
+
 };
 
 /*****************************************************************/
