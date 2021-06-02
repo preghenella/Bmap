@@ -54,3 +54,27 @@ read_Bmap_radial_coords()
   gr->SetNpy(500);
   gr->Draw("colz");
 }
+
+void
+read_Bmap_radial_coords_new()
+{
+
+  auto gr = new TGraph2D("EIC_v.0.1.0_Magnetic_Field_Map_2021_05_28_radial_coords_[cm]_[T].Bmap", "%lg %lg %lg %*lg");
+  gr->SetTitle("Br (T);z (mm);R (mm)");
+  auto gz = new TGraph2D("EIC_v.0.1.0_Magnetic_Field_Map_2021_05_28_radial_coords_[cm]_[T].Bmap", "%lg %lg %*lg %lg");
+  gz->SetTitle("Bz (T);z (mm);R (mm)");
+
+  swap(gr);
+  swap(gz);
+
+  auto c = new TCanvas("c", "c", 800, 800);
+  c->Divide(1, 2);
+  c->cd(1);
+  gz->SetNpx(500);
+  gz->SetNpy(500);
+  gz->Draw("colz");
+  c->cd(2);
+  gr->SetNpx(500);
+  gr->SetNpy(500);
+  gr->Draw("colz");
+}
