@@ -55,6 +55,16 @@ protected:
   };
   EDetectorSelect_t mDetectorSelect = kDetectorSelectIdealRICH;
   
+  G4UIdirectory *mMagneticDirectory;
+  G4UIcmdWithAString *mMagneticFieldCmd;
+  
+  enum EMagneticField_t {
+    kMagneticFieldMap,
+    kMagneticFieldProj,
+    kMagneticFieldZero
+  };
+  EMagneticField_t mMagneticField = kMagneticFieldMap;
+  
   G4UIdirectory *mRadiatorDirectory;
   G4UIcmdWithAString *mRadiatorFieldCmd;
   
