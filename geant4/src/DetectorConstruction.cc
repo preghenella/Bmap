@@ -45,7 +45,7 @@ DetectorConstruction::DetectorConstruction()
   mMagneticFieldCmd = new G4UIcmdWithAString("/magnetic/field", this);
   mMagneticFieldCmd->SetGuidance("Select field in magnetic volume");
   mMagneticFieldCmd->SetParameterName("field", false);
-  mMagneticFieldCmd->SetCandidates("map proj zero");
+  mMagneticFieldCmd->SetCandidates("map mapv2 proj zero");
   mMagneticFieldCmd->AvailableForStates(G4State_PreInit);
 
   mRadiatorDirectory = new G4UIdirectory("/radiator/");
@@ -53,7 +53,7 @@ DetectorConstruction::DetectorConstruction()
   mRadiatorFieldCmd = new G4UIcmdWithAString("/radiator/field", this);
   mRadiatorFieldCmd->SetGuidance("Select field in radiator volume");
   mRadiatorFieldCmd->SetParameterName("field", false);
-  mRadiatorFieldCmd->SetCandidates("map proj zero");
+  mRadiatorFieldCmd->SetCandidates("map mapv2 proj zero");
   mRadiatorFieldCmd->AvailableForStates(G4State_PreInit);
 
   mRadiatorChromaCmd = new G4UIcmdWithAString("/radiator/chroma", this);
@@ -82,12 +82,14 @@ DetectorConstruction::SetNewValue(G4UIcommand *command, G4String value)
 
   if (command == mMagneticFieldCmd) {
     if (value.compare("map") == 0) mMagneticField = kMagneticFieldMap;
+    if (value.compare("mapv2") == 0) mMagneticField = kMagneticFieldMapv2;
     if (value.compare("proj") == 0) mMagneticField = kMagneticFieldProj;
     if (value.compare("zero") == 0) mMagneticField = kMagneticFieldZero;
   }
 
   if (command == mRadiatorFieldCmd) {
     if (value.compare("map") == 0) mRadiatorField = kRadiatorFieldMap;
+    if (value.compare("mapv2") == 0) mRadiatorField = kRadiatorFieldMapv2;
     if (value.compare("proj") == 0) mRadiatorField = kRadiatorFieldProj;
     if (value.compare("zero") == 0) mRadiatorField = kRadiatorFieldZero;
   }
@@ -359,6 +361,11 @@ DetectorConstruction::ConstructSDandFieldIdealRICH()
   fieldManager->SetDetectorField(magneticField);
   fieldManager->CreateChordFinder(magneticField);
 
+  auto magneticFieldv2 = new MagneticFieldv2();
+  auto fieldManagerv2 = new G4FieldManager();
+  fieldManagerv2->SetDetectorField(magneticFieldv2);
+  fieldManagerv2->CreateChordFinder(magneticFieldv2);
+
   auto magneticFieldZero = new MagneticFieldZero();
   auto fieldManagerZero = new G4FieldManager();
   fieldManagerZero->SetDetectorField(magneticFieldZero);
@@ -372,6 +379,8 @@ DetectorConstruction::ConstructSDandFieldIdealRICH()
   auto magnetic_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("magnetic_lv");
   if (mMagneticField == kMagneticFieldMap) 
     magnetic_lv->SetFieldManager(fieldManager, false);
+  else if (mMagneticField == kMagneticFieldMapv2) 
+    magnetic_lv->SetFieldManager(fieldManagerv2, false);
   else if (mMagneticField = kMagneticFieldProj)
     magnetic_lv->SetFieldManager(fieldManagerProj, false);
   else if (mMagneticField = kMagneticFieldZero)
@@ -380,6 +389,8 @@ DetectorConstruction::ConstructSDandFieldIdealRICH()
   auto radiator_lv = G4LogicalVolumeStore::GetInstance()->GetVolume("radiator_lv");
   if (mRadiatorField == kRadiatorFieldMap)
     radiator_lv->SetFieldManager(fieldManager, true);
+  else if (mRadiatorField == kRadiatorFieldMapv2)
+    radiator_lv->SetFieldManager(fieldManagerv2, true);
   else if (mRadiatorField == kRadiatorFieldProj)
     radiator_lv->SetFieldManager(fieldManagerProj, true);
   else if (mRadiatorField == kRadiatorFieldZero)

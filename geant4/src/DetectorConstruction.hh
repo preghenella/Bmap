@@ -60,6 +60,7 @@ protected:
   
   enum EMagneticField_t {
     kMagneticFieldMap,
+    kMagneticFieldMapv2,
     kMagneticFieldProj,
     kMagneticFieldZero
   };
@@ -70,6 +71,7 @@ protected:
   
   enum ERadiatorField_t {
     kRadiatorFieldMap,
+    kRadiatorFieldMapv2,
     kRadiatorFieldProj,
     kRadiatorFieldZero
   };

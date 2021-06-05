@@ -30,6 +30,29 @@ MagneticField::MagneticField()
 
 /*****************************************************************/
 
+MagneticFieldv2::MagneticFieldv2()
+{
+
+  // Br vs. (r,z)
+  mBr = new TGraph2D("EIC_v.0.1.0_Magnetic_Field_Map_2021_05_28_radial_coords_[cm]_[T].Bmap", "%lg %lg %lg %*lg");
+  for (int i = 0; i < mBr->GetN(); ++i) {
+    mBr->GetX()[i] *= cm;
+    mBr->GetY()[i] *= cm;
+    mBr->GetZ()[i] *= tesla;
+  }
+  
+  // Bz vs. (r,z)
+  mBz = new TGraph2D("EIC_v.0.1.0_Magnetic_Field_Map_2021_05_28_radial_coords_[cm]_[T].Bmap", "%lg %lg %*lg %lg");
+  for (int i = 0; i < mBz->GetN(); ++i) {
+    mBz->GetX()[i] *= cm;
+    mBz->GetY()[i] *= cm;
+    mBz->GetZ()[i] *= tesla;
+  }
+
+}
+
+/*****************************************************************/
+
 MagneticField::~MagneticField()
 {
 }

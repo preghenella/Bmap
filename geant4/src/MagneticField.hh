@@ -29,6 +29,19 @@ protected:
 
 /*****************************************************************/
 
+class MagneticFieldv2 : public MagneticField
+{
+
+public:
+
+  MagneticFieldv2();
+
+protected:
+
+};
+
+/*****************************************************************/
+
 class TGraph2D;
 
 class MagneticFieldProj : public MagneticField
